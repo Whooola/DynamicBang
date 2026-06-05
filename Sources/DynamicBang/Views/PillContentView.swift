@@ -5,12 +5,8 @@ struct PillContentView: View {
 
     var body: some View {
         ZStack {
-            VisualEffectView(material: viewModel.appearance.blurMaterial.nsMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: viewModel.appearance.cornerRadius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: viewModel.appearance.cornerRadius)
-                        .stroke(Color.white.opacity(0.15), lineWidth: 0.5)
-                )
+            RoundedRectangle(cornerRadius: viewModel.appearance.cornerRadius)
+                .fill(Color.black)
 
             if viewModel.effectiveIsExpanded {
                 ExpandedStateView(viewModel: viewModel)
@@ -34,21 +30,5 @@ struct PillContentView: View {
             value: viewModel.effectiveIsExpanded
         )
         .preferredColorScheme(.dark)
-    }
-}
-
-struct VisualEffectView: NSViewRepresentable {
-    let material: NSVisualEffectView.Material
-
-    func makeNSView(context: Context) -> NSVisualEffectView {
-        let view = NSVisualEffectView()
-        view.material = material
-        view.blendingMode = .behindWindow
-        view.state = .active
-        return view
-    }
-
-    func updateNSView(_ nsView: NSVisualEffectView, context: Context) {
-        nsView.material = material
     }
 }
