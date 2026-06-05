@@ -50,49 +50,55 @@ struct NotchPillShape: Shape {
         var p = Path()
 
         if side == .right {
-            // Left edge is the notch-facing side.
-            // Top-left: flat, at top bezel.
-            p.move(to: CGPoint(x: 0, y: 0))
-            // Top edge left→right
+            // Pill sits RIGHT of notch.
+            // In pill local coords: notch right edge is at x=nr (straight vertical).
+            // Notch bottom-right corner: arc centered at (0, h-nr) radius nr
+            //   from (0, h) [bottom] clockwise to (nr, h-nr) [notch side].
+
+            // Start at top of notch edge
+            p.move(to: CGPoint(x: nr, y: 0))
+            // Top edge → right
             p.addLine(to: CGPoint(x: w - pr, y: 0))
-            // Top-right corner
+            // Top-right rounded corner
             p.addArc(center: CGPoint(x: w - pr, y: pr), radius: pr,
                      startAngle: .degrees(-90), endAngle: .degrees(0), clockwise: false)
-            // Right edge down
+            // Right edge ↓
             p.addLine(to: CGPoint(x: w, y: h - pr))
-            // Bottom-right corner
+            // Bottom-right rounded corner
             p.addArc(center: CGPoint(x: w - pr, y: h - pr), radius: pr,
                      startAngle: .degrees(0), endAngle: .degrees(90), clockwise: false)
-            // Bottom edge right→left to notch curve start
-            p.addLine(to: CGPoint(x: nr, y: h))
-            // Fill notch bottom-right corner gap:
-            // Notch corner center in pill local: (0, h-nr)
-            // Arc follows notch contour from (nr, h) up to (0, h-nr)
+            // Bottom edge → left to notch curve end
+            p.addLine(to: CGPoint(x: 0, y: h))
+            // Follow notch corner curve ↑ (from bottom to notch side)
             p.addArc(center: CGPoint(x: 0, y: h - nr), radius: nr,
                      startAngle: .degrees(90), endAngle: .degrees(0), clockwise: true)
-            // Left edge (notch-facing) straight up to top
-            p.addLine(to: CGPoint(x: 0, y: 0))
+            // Straight ↑ along notch's right edge back to top
+            p.addLine(to: CGPoint(x: nr, y: 0))
         } else {
-            // Right edge is the notch-facing side.
-            p.move(to: CGPoint(x: w, y: 0))
-            // Top edge right→left
+            // Pill sits LEFT of notch.
+            // In pill local coords: notch left edge is at x=w-nr (straight vertical).
+            // Notch bottom-left corner: arc centered at (w, h-nr) radius nr
+            //   from (w, h) [bottom] counterclockwise to (w-nr, h-nr) [notch side].
+
+            // Start at top of notch edge
+            p.move(to: CGPoint(x: w - nr, y: 0))
+            // Top edge → left
             p.addLine(to: CGPoint(x: pr, y: 0))
-            // Top-left corner
+            // Top-left rounded corner
             p.addArc(center: CGPoint(x: pr, y: pr), radius: pr,
                      startAngle: .degrees(-90), endAngle: .degrees(180), clockwise: true)
-            // Left edge down
+            // Left edge ↓
             p.addLine(to: CGPoint(x: 0, y: h - pr))
-            // Bottom-left corner
+            // Bottom-left rounded corner
             p.addArc(center: CGPoint(x: pr, y: h - pr), radius: pr,
                      startAngle: .degrees(180), endAngle: .degrees(90), clockwise: true)
-            // Bottom edge left→right to notch curve start
-            p.addLine(to: CGPoint(x: w - nr, y: h))
-            // Fill notch bottom-left corner gap:
-            // Notch corner center in pill local: (w, h-nr)
+            // Bottom edge → right to notch curve end
+            p.addLine(to: CGPoint(x: w, y: h))
+            // Follow notch corner curve ↑ (from bottom to notch side)
             p.addArc(center: CGPoint(x: w, y: h - nr), radius: nr,
                      startAngle: .degrees(90), endAngle: .degrees(180), clockwise: false)
-            // Right edge (notch-facing) straight up to top
-            p.addLine(to: CGPoint(x: w, y: 0))
+            // Straight ↑ along notch's left edge back to top
+            p.addLine(to: CGPoint(x: w - nr, y: 0))
         }
 
         p.closeSubpath()
