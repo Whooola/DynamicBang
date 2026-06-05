@@ -28,13 +28,13 @@ enum NotchGeometryProvider {
         switch side {
         case .right:
             if let rightArea = screen.notchRightArea {
-                x = rightArea.minX - nr
+                x = rightArea.minX - nr - 2
             } else {
                 x = screen.frame.width - collapsedWidth
             }
         case .left:
             if let leftArea = screen.notchLeftArea {
-                x = leftArea.maxX - appearance.collapsedWidth
+                x = leftArea.maxX - appearance.collapsedWidth + 1
             } else {
                 x = 0
             }
