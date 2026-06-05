@@ -43,7 +43,7 @@ final class OverlayWindowController {
         switch side {
         case .right:
             if let rightArea = screen.notchRightArea {
-                x = rightArea.minX - nr - 2
+                x = rightArea.minX - nr - 3
             } else {
                 x = screen.frame.width - w
             }
