@@ -8,7 +8,7 @@ enum SettingsWindow {
         if window == nil {
             let vm = SettingsViewModel()
             window = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 560, height: 440),
+                contentRect: NSRect(x: 0, y: 0, width: 620, height: 460),
                 styleMask: [.titled, .closable, .miniaturizable, .resizable],
                 backing: .buffered,
                 defer: false
@@ -64,6 +64,10 @@ struct SettingsRootView: View {
             AppearanceEditorView(config: $viewModel.configuration.appearance)
                 .tabItem { Label("外观", systemImage: "paintpalette") }
                 .tag(5)
+
+            FineTuneEditorView(config: $viewModel.configuration.fineTune)
+                .tabItem { Label("微调", systemImage: "arrow.up.and.down.and.arrow.left.and.right") }
+                .tag(6)
         }
         .padding()
         .frame(minWidth: 520, minHeight: 400)

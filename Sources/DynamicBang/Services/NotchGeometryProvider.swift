@@ -15,6 +15,7 @@ enum NotchGeometryProvider {
 
     static func pillFrame(for screen: NSScreen, side: PillSide) -> NSRect {
         let config = ConfigurationManager.shared.configuration
+        let ft = config.fineTune
         let appearance = config.appearance
         let nr = notchCornerRadius(for: screen)
         let menuBarHeight = screen.notchHeight
@@ -22,19 +23,21 @@ enum NotchGeometryProvider {
 
         let collapsedWidth = appearance.collapsedWidth + nr
         let pillHeight = menuBarHeight
-        let y = menuBarBottom
 
         let x: CGFloat
+        let y: CGFloat
         switch side {
         case .right:
+            y = menuBarBottom + ft.rightY
             if let rightArea = screen.notchRightArea {
-                x = rightArea.minX - nr - 3
+                x = rightArea.minX - nr + ft.rightX
             } else {
                 x = screen.frame.width - collapsedWidth
             }
         case .left:
+            y = menuBarBottom + ft.leftY
             if let leftArea = screen.notchLeftArea {
-                x = leftArea.maxX - appearance.collapsedWidth + 1
+                x = leftArea.maxX - appearance.collapsedWidth + ft.leftX
             } else {
                 x = 0
             }

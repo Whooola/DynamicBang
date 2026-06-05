@@ -30,6 +30,7 @@ final class OverlayWindowController {
 
     private func expandedFrame(expanded: Bool) -> NSRect {
         let config = ConfigurationManager.shared.configuration
+        let ft = config.fineTune
         let appearance = config.appearance
         let nr = NotchGeometryProvider.notchCornerRadius(for: screen)
         let menuBarHeight = screen.notchHeight
@@ -37,19 +38,21 @@ final class OverlayWindowController {
 
         let w = (expanded ? appearance.expandedWidth : appearance.collapsedWidth) + nr
         let h = menuBarHeight
-        let y = menuBarBottom
 
         let x: CGFloat
+        let y: CGFloat
         switch side {
         case .right:
+            y = menuBarBottom + ft.rightY
             if let rightArea = screen.notchRightArea {
-                x = rightArea.minX - nr - 3
+                x = rightArea.minX - nr + ft.rightX
             } else {
                 x = screen.frame.width - w
             }
         case .left:
+            y = menuBarBottom + ft.leftY
             if let leftArea = screen.notchLeftArea {
-                x = leftArea.maxX - appearance.collapsedWidth + 1
+                x = leftArea.maxX - appearance.collapsedWidth + ft.leftX
             } else {
                 x = 0
             }
