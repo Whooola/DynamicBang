@@ -24,7 +24,7 @@ struct PillContentView: View {
             width: (viewModel.effectiveIsExpanded
                 ? viewModel.appearance.expandedWidth
                 : viewModel.appearance.collapsedWidth) + NotchGeometryProvider.notchCornerRadius,
-            height: viewModel.appearance.pillHeight
+            height: viewModel.appearance.pillHeight + 4
         )
         .animation(
             .spring(
