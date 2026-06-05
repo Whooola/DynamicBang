@@ -1,7 +1,7 @@
 import AppKit
 
 enum NotchGeometryProvider {
-    static let pillSpacing: CGFloat = 6
+    static let pillSpacing: CGFloat = 0
 
     static func pillFrame(for screen: NSScreen, side: PillSide) -> NSRect {
         let config = ConfigurationManager.shared.configuration
@@ -34,21 +34,20 @@ enum NotchGeometryProvider {
 
     static func hotZoneRect(for screen: NSScreen) -> NSRect {
         let config = ConfigurationManager.shared.configuration
-        let leftMaxX = screen.notchLeftArea?.maxX ?? 0
-        let rightMinX = screen.notchRightArea?.minX ?? 0
-        let notchWidth = max(0, rightMinX - leftMaxX)
-        let notchX = (leftMaxX + rightMinX) / 2
+        let leftFrame = pillFrame(for: screen, side: .left)
+        let rightFrame = pillFrame(for: screen, side: .right)
+        let leftEdge = leftFrame.minX
+        let rightEdge = rightFrame.maxX
 
-        let padding: CGFloat = 20
         let menuBarHeight = screen.notchHeight
         let menuBarBottom = screen.frame.height - menuBarHeight
         let totalHeight = menuBarHeight + config.hotZoneHeight
         let hotZoneBottom = menuBarBottom - config.hotZoneHeight
 
         return NSRect(
-            x: notchX - notchWidth / 2 - padding,
+            x: leftEdge - 10,
             y: hotZoneBottom,
-            width: notchWidth + padding * 2,
+            width: (rightEdge - leftEdge) + 20,
             height: totalHeight
         )
     }
