@@ -30,46 +30,50 @@ struct NowPlayingBadgeView: View {
 
 struct MarqueeText: View {
     let text: String
-    @State private var offset: CGFloat = 0
-    @State private var textWidth: CGFloat = 0
+    @State private var animate = false
 
     var body: some View {
-        GeometryReader { geo in
-            let containerWidth = geo.size.width
-            let needsScroll = textWidth > containerWidth
+        GeometryReader { _ in
+            let spacing: CGFloat = 24
 
-            Text(text)
-                .font(.system(size: 11, weight: .medium))
-                .foregroundColor(.white)
-                .lineLimit(1)
-                .fixedSize()
-                .background(
-                    GeometryReader { textGeo in
-                        Color.clear.onAppear {
-                            textWidth = textGeo.size.width
+            HStack(spacing: spacing) {
+                Text(text)
+                Text(text)
+            }
+            .font(.system(size: 11, weight: .medium))
+            .foregroundColor(.white)
+            .lineLimit(1)
+            .fixedSize()
+            .background(
+                GeometryReader { textGeo in
+                    Color.clear.onAppear {
+                        let singleW = textGeo.size.width / 2
+                        let duration = max(Double(singleW + spacing) / 25.0, 1.5)
+                        withAnimation(.linear(duration: duration).repeatForever(autoreverses: false)) {
+                            animate = true
                         }
                     }
-                )
-                .offset(x: needsScroll ? offset : 0)
-                .onAppear {
-                    guard needsScroll else { return }
-                    let duration = Double(textWidth) / 30.0
-                    let animation = Animation.linear(duration: duration)
-                        .repeatForever(autoreverses: false)
-                    offset = containerWidth - textWidth - 10
-                    withAnimation(animation) {}
                 }
-                .mask(
-                    HStack(spacing: 0) {
-                        Rectangle()
-                        LinearGradient(
-                            gradient: Gradient(colors: [.clear, .white]),
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                        .frame(width: 10)
-                    }
-                )
+            )
+            .offset(x: animate ? -(textWidth) : 0)
+            .mask(
+                HStack(spacing: 0) {
+                    Rectangle()
+                    LinearGradient(
+                        gradient: Gradient(colors: [.clear, .white]),
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                    .frame(width: 12)
+                }
+            )
         }
+    }
+
+    private var textWidth: CGFloat {
+        let font = NSFont.systemFont(ofSize: 11, weight: .medium)
+        let attrs = [NSAttributedString.Key.font: font]
+        let size = (text as NSString).size(withAttributes: attrs)
+        return size.width + 24
     }
 }

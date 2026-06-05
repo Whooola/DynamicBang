@@ -7,10 +7,11 @@ enum NotchGeometryProvider {
         let config = ConfigurationManager.shared.configuration
         let appearance = config.appearance
         let menuBarHeight = screen.notchHeight
+        let menuBarBottom = screen.frame.height - menuBarHeight
 
         let collapsedWidth = appearance.collapsedWidth
         let pillHeight = appearance.pillHeight
-        let y = (menuBarHeight - pillHeight) / 2
+        let y = menuBarBottom + (menuBarHeight - pillHeight) / 2
 
         let x: CGFloat
         switch side {
@@ -40,19 +41,21 @@ enum NotchGeometryProvider {
 
         let padding: CGFloat = 20
         let menuBarHeight = screen.notchHeight
-        let hotZoneHeight = menuBarHeight + config.hotZoneHeight
+        let menuBarBottom = screen.frame.height - menuBarHeight
+        let totalHeight = menuBarHeight + config.hotZoneHeight
+        let hotZoneBottom = menuBarBottom - config.hotZoneHeight
 
         return NSRect(
             x: notchX - notchWidth / 2 - padding,
-            y: 0,
+            y: hotZoneBottom,
             width: notchWidth + padding * 2,
-            height: hotZoneHeight
+            height: totalHeight
         )
     }
 
     static func isPointInHotZone(_ point: CGPoint, screen: NSScreen) -> Bool {
-        var pointInScreen = point
-        pointInScreen.y = screen.frame.height - point.y
-        return hotZoneRect(for: screen).contains(pointInScreen)
+        let screenPoint = CGPoint(x: point.x - screen.frame.origin.x,
+                                   y: point.y - screen.frame.origin.y)
+        return hotZoneRect(for: screen).contains(screenPoint)
     }
 }

@@ -3,7 +3,7 @@ import AppKit
 import Combine
 
 @Observable
-final class PillViewModel: NSObject {
+final class PillViewModel: NSObject, @unchecked Sendable {
     let side: PillSide
     private let mouseTracker: MouseTracker
     private let statusProvider = StatusProvider()

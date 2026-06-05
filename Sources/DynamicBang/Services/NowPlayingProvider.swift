@@ -1,5 +1,5 @@
 import AppKit
-import MediaPlayer
+import Darwin
 
 @Observable
 final class NowPlayingProvider {
@@ -8,6 +8,14 @@ final class NowPlayingProvider {
     private(set) var isPlaying: Bool = false
     private(set) var albumArt: NSImage?
     private var timer: Timer?
+
+    private typealias MRGetNowPlayingInfo = @convention(c) (
+        DispatchQueue,
+        @convention(block) @escaping (CFDictionary?) -> Void
+    ) -> Void
+
+    private var mrGetNowPlaying: MRGetNowPlayingInfo?
+    private var didAttemptLoad = false
 
     func start() {
         update()
@@ -30,72 +38,52 @@ final class NowPlayingProvider {
     }
 
     private func update() {
-        if let info = MPNowPlayingInfoCenter.default().nowPlayingInfo {
-            title = info[MPMediaItemPropertyTitle] as? String ?? ""
-            artist = info[MPMediaItemPropertyArtist] as? String ?? ""
-            isPlaying = !title.isEmpty
-            if let artData = info[MPMediaItemPropertyArtwork] as? MPMediaItemArtwork {
-                albumArt = artData.image(at: NSSize(width: 32, height: 32))
+        if let mr = loadMRMediaRemote() {
+            mr(DispatchQueue.main) { [weak self] info in
+                guard let self, let info = info as? [String: Any] else {
+                    self?.clearNowPlaying()
+                    return
+                }
+                let t = info["kMRMediaRemoteNowPlayingInfoTitle"] as? String ?? ""
+                let a = info["kMRMediaRemoteNowPlayingInfoArtist"] as? String ?? ""
+                let rate = info["kMRMediaRemoteNowPlayingInfoPlaybackRate"] as? Double ?? 0
+
+                DispatchQueue.main.async {
+                    if !t.isEmpty, rate > 0 {
+                        self.title = t
+                        self.artist = a
+                        self.isPlaying = true
+                        if let artData = info["kMRMediaRemoteNowPlayingInfoArtworkData"] as? Data {
+                            self.albumArt = NSImage(data: artData)
+                        } else {
+                            self.albumArt = nil
+                        }
+                    } else {
+                        self.clearNowPlaying()
+                    }
+                }
             }
-            return
+        } else {
+            clearNowPlaying()
         }
+    }
 
-        if let track = getMusicAppTrack() {
-            title = track.title
-            artist = track.artist
-            isPlaying = true
-            return
-        }
+    private func loadMRMediaRemote() -> MRGetNowPlayingInfo? {
+        if didAttemptLoad { return mrGetNowPlaying }
+        didAttemptLoad = true
+        guard let handle = dlopen(
+            "/System/Library/PrivateFrameworks/MediaRemote.framework/MediaRemote",
+            RTLD_NOW
+        ) else { return nil }
+        guard let sym = dlsym(handle, "MRMediaRemoteGetNowPlayingInfo") else { return nil }
+        mrGetNowPlaying = unsafeBitCast(sym, to: MRGetNowPlayingInfo.self)
+        return mrGetNowPlaying
+    }
 
-        if let track = getSpotifyTrack() {
-            title = track.title
-            artist = track.artist
-            isPlaying = true
-            return
-        }
-
+    private func clearNowPlaying() {
         isPlaying = false
         title = ""
         artist = ""
-    }
-
-    private func getMusicAppTrack() -> (title: String, artist: String)? {
-        let script = """
-        if application "Music" is running then
-            tell application "Music"
-                if player state is playing then
-                    return name of current track & "|||" & artist of current track
-                end if
-            end tell
-        end if
-        """
-        return runAppleScriptAndParse(script)
-    }
-
-    private func getSpotifyTrack() -> (title: String, artist: String)? {
-        let script = """
-        if application "Spotify" is running then
-            tell application "Spotify"
-                if player state is playing then
-                    return name of current track & "|||" & artist of current track
-                end if
-            end tell
-        end if
-        """
-        return runAppleScriptAndParse(script)
-    }
-
-    private func runAppleScriptAndParse(_ script: String) -> (title: String, artist: String)? {
-        let appleScript = NSAppleScript(source: script)
-        var error: NSDictionary?
-        let result = appleScript?.executeAndReturnError(&error)
-        guard error == nil, let output = result?.stringValue?.trimmingCharacters(in: .whitespacesAndNewlines),
-              !output.isEmpty
-        else { return nil }
-
-        let parts = output.components(separatedBy: "|||")
-        guard parts.count == 2 else { return nil }
-        return (parts[0].trimmingCharacters(in: .whitespaces),
-                parts[1].trimmingCharacters(in: .whitespaces))
+        albumArt = nil
     }
 }
