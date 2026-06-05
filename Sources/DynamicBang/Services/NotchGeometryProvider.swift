@@ -22,7 +22,7 @@ enum NotchGeometryProvider {
 
         let collapsedWidth = appearance.collapsedWidth + nr
         let pillHeight = menuBarHeight
-        let y = menuBarBottom + 1
+        let y = menuBarBottom
 
         let x: CGFloat
         switch side {

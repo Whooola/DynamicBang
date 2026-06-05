@@ -37,7 +37,7 @@ final class OverlayWindowController {
 
         let w = (expanded ? appearance.expandedWidth : appearance.collapsedWidth) + nr
         let h = menuBarHeight
-        let y = menuBarBottom + 1
+        let y = menuBarBottom
 
         let x: CGFloat
         switch side {
